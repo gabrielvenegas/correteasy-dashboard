@@ -1,0 +1,36 @@
+.imagemFundo {
+  background-image: url(./../../assets/corret.png);
+  min-height: 100%;
+  min-width: 1024px;
+  width: 100%;
+  height: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.containerLoginPage {
+  display: flex;
+  justify-content: inherit;
+}
+.card {
+  height: 50vh;
+  width: 40vh;
+  opacity: 0.9;
+}
+.headerCredentials {
+  margin: 25px 0;
+}
+.subtitleHeader {
+  margin-top: 20px;
+  margin-bottom: 0px;
+  color: #85898e;
+}
+.botao-login {
+  border-radius: 4px;
+  width: 100%;
+  height: 5vh;
+}
