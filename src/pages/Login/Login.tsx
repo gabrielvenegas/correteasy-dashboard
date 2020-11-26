@@ -16,12 +16,68 @@ import corret from '../../assets/corret.png';
 import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const Login = ({ children }: any): JSX.Element => {
+  const alertContext = useContext(AlertContext);
+  const routeHistory = useHistory();
+  const authContext = useContext(AuthContext);
+  const [credentials, setCredentials] = useState({
+    mail: '',
+    password: '',
+  } as any);
+  const [onRequest, setOnRequest] = useState(false);
+  async function postLogin(event: FormEvent<HTMLFormElement>) {
+    setOnRequest(true);
+    event.preventDefault();
+
+    try {
+      const { data } = await API.post('/auth/login', credentials);
+      const token = `Bearer ${data.token}`;
+      const claims = JwtDecode(token) as any;
+      const {
+        data: { roles, permissions },
+      } = await API.get<any>(`/user/${claims.user_id}`);
+
+      localStorage.setItem('jwtSecurityToken', token);
+      localStorage.setItem('username', claims.username);
+      setOnRequest(false);
+
+      // event.preventDefault();
+      authContext.setToken(token);
+      authContext.setUsername(claims.username);
+
+      alertContext.setAlert({
+        open: true,
+        type: 'success',
+        message: 'Login efetuado com sucesso.',
+        positionX: 'center',
+        positionY: 'top',
+      });
+
+      setTimeout(() => {
+        window.location.reload();
+
+        routeHistory.push('/usuario/listagem');
+      }, 1000);
+    } catch (ex) {
+      alertContext.setAlert({
+        open: true,
+        type: 'error',
+        message:
+          ex?.response?.data?.message ||
+          'Ocorreu uma exceção com sua requisição',
+        positionX: 'center',
+        positionY: 'top',
+      });
+    } finally {
+      setOnRequest(false);
+    }
+  }
   return (
     <div className="imagemFundo">
       <Card className="card">
-        <form className="containerLoginPage">
+        <form onSubmit={postLogin} className="containerLoginPage">
           {children}
           <div className="containerCredentials">
             <Grid
@@ -70,12 +126,12 @@ const Login = ({ children }: any): JSX.Element => {
                     variant="outlined"
                     type="email"
                     required
-                    // onChange={(event): void =>
-                    //   setCredentials({
-                    //     ...credentials,
-                    //     mail: event.target.value,
-                    //   })
-                    // }
+                    onChange={(event): void =>
+                      setCredentials({
+                        ...credentials,
+                        mail: event.target.value,
+                      })
+                    }
                   />
                 </Grid>
                 <Grid item xs={10}>
@@ -86,12 +142,12 @@ const Login = ({ children }: any): JSX.Element => {
                     variant="outlined"
                     type="password"
                     required
-                    // onChange={(event): void =>
-                    //   setCredentials({
-                    //     ...credentials,
-                    //     password: event.target.value,
-                    //   })
-                    // }
+                    onChange={(event): void =>
+                      setCredentials({
+                        ...credentials,
+                        password: event.target.value,
+                      })
+                    }
                   />
                 </Grid>
                 {/* <Grid item xs={12} className="gridItemForgottPassword">
@@ -106,7 +162,8 @@ const Login = ({ children }: any): JSX.Element => {
                     variant="contained"
                     color="primary"
                     disableElevation
-                    className="botao-loginj"
+                    className="botao-login"
+                    type="submit"
                   >
                     Entrar
                     {/* // disabled={onRequest || onRequestWithGoogle} */}
